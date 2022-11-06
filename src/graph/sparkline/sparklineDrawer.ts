@@ -90,10 +90,14 @@ const drawData = (
   context.stroke();
 
   if (mousePositionPixel && positionXList.length && dataPosition) {
-    const point = dataPosition[getClosestValue(mousePositionPixel.x, positionXList)];
+    const position = getClosestValue(mousePositionPixel.x, positionXList);
+    const point = dataPosition[position];
     drawDot(context, point.pixel.x, point.pixel.y);
     drawPositionLine(context, point.pixel.x, height);
-    return point.value.y;
+    return {
+      value: point.value.y,
+      position,
+    };
   }
 
   return null;

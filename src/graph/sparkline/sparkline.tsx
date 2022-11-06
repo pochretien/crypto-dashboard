@@ -1,16 +1,17 @@
 import * as React from 'react';
 import {useEffect, useRef, useState} from 'react';
-import {Point, SparklineDrawer} from './sparklineDrawer'
+import {Point, SparklineData, SparklineDrawer} from './sparklineDrawer'
 import {ToolTip} from "../../components/tooltip";
 import {StyledCanvas} from "../../style/components/styledCanvas";
 import {CoinMarkedSparkline} from "../../api/coingeckoInterface";
 import {CurrencyCode, numberWithSpaces} from "../../utils/currency";
 import getSymbolFromCurrency from "currency-symbol-map";
+import {subtractHours} from "../../utils/date";
 
 export interface SparklineProps {
   width?: number;
   height?: number;
-  data: any[];
+  data: SparklineData;
   scaleY?: number;
   info: CoinMarkedSparkline;
   currency: CurrencyCode;
@@ -22,7 +23,7 @@ export const Sparkline = ({ width = 300, height = 100, data = [], info, currency
 
   const [redraw, setRedraw] = useState<boolean>(false);
   const [mousePosition, setMousePosition] = useState<Point | undefined>(undefined);
-  const [tooltipValue, setTooltipValue] = useState<number>(null);
+  const [tooltipValues, setTooltipValues] = useState<{ value: number, date: string }>(null);
 
   const getCanvas = () => {
     return canvasRef.current;
@@ -43,7 +44,12 @@ export const Sparkline = ({ width = 300, height = 100, data = [], info, currency
     const context = getContext(getCanvas());
     if (context && width && height) {
       clearDraw();
-      setTooltipValue(SparklineDrawer.drawData(context, data, width, height, scaleY, {x: xPixel, y: yPixel}));
+      const {value, position} = SparklineDrawer.drawData(context, data, width, height, scaleY, {x: xPixel, y: yPixel});
+      const currentDate = subtractHours((data.length - 1) - position, new Date(info.last_updated as string));
+      setTooltipValues({
+        value,
+        date: currentDate.toLocaleString(),
+      });
       setMousePosition({x: e.pageX, y: e.pageY});
     }
   }
@@ -84,7 +90,8 @@ export const Sparkline = ({ width = 300, height = 100, data = [], info, currency
     if (mousePosition) {
       return (
           <ToolTip x={mousePosition.x} y={mousePosition.y} visible={!!mousePosition}>
-            {`${getSymbolFromCurrency(currency)}${numberWithSpaces(Math.round((tooltipValue || 0) * 1000000) / 1000000)}`}
+            <div>{`${getSymbolFromCurrency(currency)}${numberWithSpaces(Math.round((tooltipValues.value || 0) * 1000000) / 1000000)}`}</div>
+            <div>{tooltipValues.date}</div>
           </ToolTip>
       );
     }
