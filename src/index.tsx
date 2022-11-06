@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom/client'
 import reportWebVitals from './reportWebVitals'
 import { Dashboard } from './dashboard/dashboard'
 import {GlobalStyle} from "./style/global";
+import {StyledHeader} from "./style/components/styledHeader";
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
   <React.StrictMode>
       <GlobalStyle />
+      <StyledHeader><div>Crypto-Dashboard</div></StyledHeader>
       <Dashboard />
   </React.StrictMode>
 )
