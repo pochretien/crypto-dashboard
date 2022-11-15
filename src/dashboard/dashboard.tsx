@@ -10,7 +10,7 @@ import {StyledContent} from "../style/components/styledContent";
 
 export const Dashboard = () => {
   const [page, setPage] = useState<number>(1);
-  const [listData, setListData] = useState<CoinMarkedSparkline[]>([]);
+  const [listData, setListData] = useState<CoinMarkedSparkline[] | undefined>(undefined);
   const [currency] = useState<CurrencyCode>(CurrencyCode.USD);
   let isFetching = false;
 
@@ -18,25 +18,27 @@ export const Dashboard = () => {
     if (!isFetching) {
       isFetching = true;
       getCoinsMarkets({per_page: 20, page, vs_currency: currency, sparkline: true}).then((list) => {
-        setListData(listData.concat(list))
+        setListData((!listData ? [] : listData)?.concat(list));
         isFetching = false;
       })
     }
-  }, [page])
+  }, [page]);
 
   useEffect(() => {
-    setListData([]);
-    setPage(1);
+    if (listData) {
+      setListData([]);
+      setPage(1);
+    }
   }, [currency]);
 
   const fetchMoreData = () => {
     setPage(page + 1);
   }
 
-  if (!listData.length && isFetching) {
+  if (!listData || (!listData?.length && isFetching)) {
     return <StyledLoading>Loading ...</StyledLoading>
   }
-  if (!listData.length) {
+  if (!listData?.length && !isFetching) {
     return <StyledLoading>No data!</StyledLoading>
   }
   return (
